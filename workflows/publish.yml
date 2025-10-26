@@ -1,1 +1,39 @@
+name: Auto Deploy Website
 
+on:
+  push:
+    branches:
+      - main  # main branch এ push করলে auto publish হবে
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@v5
+
+      # 👇 পুরো repository (root + সব folder সহ) upload করবে
+      - name: Upload entire site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .  # dot মানে current folder অর্থাৎ পুরো repo
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
